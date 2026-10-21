@@ -3,6 +3,7 @@ artifacts/
 .gradle/
 .kotlin/
 build/
+android/**/bin/
 local.properties
 .idea/
 .vscode/
