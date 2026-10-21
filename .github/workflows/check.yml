@@ -1,0 +1,95 @@
+name: Check FieldSync
+on: [push, pull_request]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: fieldsync
+          POSTGRES_PASSWORD: fieldsync
+          POSTGRES_DB: fieldsync
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fieldsync"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      TEST_DATABASE_URL: postgres://fieldsync:fieldsync@localhost:5432/fieldsync?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - run: go vet ./...
+      - run: go test -race -cover ./...
+      - run: go run ./cmd/simulate -seed 42 -loss 0.7 -delay 0s
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+      - run: bash ./gradlew :core:test :app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:assembleDebugAndroidTest
+        working-directory: android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fieldsync-debug
+          path: android/app/build/outputs/apk/debug/*.apk
+  room-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: fieldsync
+          POSTGRES_PASSWORD: fieldsync
+          POSTGRES_DB: fieldsync
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fieldsync"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://fieldsync:fieldsync@localhost:5432/fieldsync?sslmode=disable
+      ADDR: :18080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Start PostgreSQL-backed API for Android integration tests
+        working-directory: backend
+        run: |
+          go build -o "$RUNNER_TEMP/fieldsync" ./cmd/server
+          MEDIA_DIR="$RUNNER_TEMP/fieldsync-media" nohup "$RUNNER_TEMP/fieldsync" > "$RUNNER_TEMP/fieldsync.log" 2>&1 &
+          curl --fail --retry 10 --retry-connrefused --retry-delay 1 http://localhost:18080/health
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+      - name: Enable KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          working-directory: android
+          script: bash ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.cloudUrl=http://10.0.2.2:18080
+

@@ -1,0 +1,66 @@
+### Process health (not a database readiness check)
+GET http://localhost:8080/health
+
+### Upload an offline edit and fetch the first page.
+### Retrying this exact request must not duplicate the operation.
+POST http://localhost:8080/v1/sync
+Content-Type: application/json
+
+{
+  "workspace": "demo",
+  "cursor": 0,
+  "operations": [
+    {
+      "id": "example-alice-1",
+      "taskId": "example-task",
+      "actorId": "example-alice",
+      "clock": 1,
+      "field": "title",
+      "value": "Review the shared project plan"
+    }
+  ]
+}
+
+### Fetch changes. Replace 0 with the cursor from the previous response.
+POST http://localhost:8080/v1/sync
+Content-Type: application/json
+
+{"workspace":"demo","cursor":0,"operations":[]}
+
+### Register a local learning account (requires PostgreSQL).
+POST http://localhost:8080/v1/auth/register
+Content-Type: application/json
+
+{"name":"Sam","email":"sam@example.test","password":"learning-password"}
+
+### Sign in; copy the returned token into the requests below.
+POST http://localhost:8080/v1/auth/login
+Content-Type: application/json
+
+{"email":"sam@example.test","password":"learning-password"}
+
+### List teams.
+GET http://localhost:8080/v1/teams
+Authorization: Bearer REPLACE_WITH_TOKEN
+
+### Create a team; share the returned inviteCode with a teammate.
+POST http://localhost:8080/v1/teams
+Authorization: Bearer REPLACE_WITH_TOKEN
+Content-Type: application/json
+
+{"name":"Shared projects"}
+
+### Join a team as viewer, using the second account's token.
+POST http://localhost:8080/v1/teams
+Authorization: Bearer REPLACE_WITH_SECOND_ACCOUNT_TOKEN
+Content-Type: application/json
+
+{"inviteCode":"REPLACE_WITH_INVITE_CODE"}
+
+### Owner grants editor access to a member.
+PUT http://localhost:8080/v1/teams/REPLACE_WITH_TEAM_ID/members
+Authorization: Bearer REPLACE_WITH_OWNER_TOKEN
+Content-Type: application/json
+
+{"userId":"REPLACE_WITH_MEMBER_ID","role":"editor"}
+

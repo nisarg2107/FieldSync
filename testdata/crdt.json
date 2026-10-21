@@ -1,0 +1,18 @@
+{
+  "operations": [
+    {"id":"a1","taskId":"task-1","actorId":"alice","clock":1,"field":"title","value":"Inspect pump"},
+    {"id":"a2","taskId":"task-1","actorId":"alice","clock":2,"field":"title","value":"Inspect north pump"},
+    {"id":"b2","taskId":"task-1","actorId":"bob","clock":2,"field":"title","value":"Inspect south pump"},
+    {"id":"c2","taskId":"task-1","actorId":"carol","clock":2,"field":"completed","value":"true"},
+    {"id":"a3","taskId":"task-1","actorId":"alice","clock":3,"field":"deleted","value":"true"},
+    {"id":"a4","taskId":"task-1","actorId":"alice","clock":4,"field":"title","value":"Inspect both pumps"},
+    {"id":"b5","taskId":"task-1","actorId":"bob","clock":5,"field":"deleted","value":"false"}
+  ],
+  "expected": {
+    "id":"task-1",
+    "title":{"value":"Inspect both pumps","clock":4,"actorId":"alice"},
+    "completed":{"value":"true","clock":2,"actorId":"carol"},
+    "deleted":{"value":"false","clock":5,"actorId":"bob"}
+  }
+}
+

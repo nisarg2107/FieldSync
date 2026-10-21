@@ -1,0 +1,17 @@
+.tools/
+artifacts/
+.gradle/
+.kotlin/
+build/
+local.properties
+.idea/
+.vscode/
+.github/modernize/
+*.iml
+*.apk
+*.aab
+*.log
+.env
+backend/fieldsync
+backend/fieldsync.exe
+backend/data/

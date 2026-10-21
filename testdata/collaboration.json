@@ -1,0 +1,14 @@
+{
+  "operations": [
+    {"id":"seed-title","taskId":"task","actorId":"seed","clock":1,"field":"title","value":"Shared task"},
+    {"id":"base","taskId":"task","actorId":"seed","clock":2,"field":"status","value":"{\"value\":\"open\",\"observed\":[]}"},
+    {"id":"label","taskId":"task","actorId":"seed","clock":3,"field":"check:item-1:label","value":"Review the draft"},
+    {"id":"status-a","taskId":"task","actorId":"alice","clock":3,"field":"status","value":"{\"value\":\"completed\",\"observed\":[\"base\"]}"},
+    {"id":"status-b","taskId":"task","actorId":"bob","clock":3,"field":"status","value":"{\"value\":\"blocked\",\"observed\":[\"base\"]}"},
+    {"id":"check-a","taskId":"task","actorId":"alice","clock":4,"field":"check:item-1:result","value":"pass"},
+    {"id":"check-b","taskId":"task","actorId":"bob","clock":4,"field":"check:item-1:note","value":"Reviewed together"},
+    {"id":"description","taskId":"task","actorId":"alice","clock":5,"field":"description","value":"A generic collaboration task"},
+    {"id":"priority","taskId":"task","actorId":"bob","clock":5,"field":"priority","value":"high"},
+    {"id":"resolved","taskId":"task","actorId":"carol","clock":4,"field":"status","value":"{\"value\":\"blocked\",\"observed\":[\"status-a\",\"status-b\"]}"}
+  ]
+}

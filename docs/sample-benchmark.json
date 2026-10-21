@@ -1,0 +1,22 @@
+{
+  "config": {
+    "seed": 42,
+    "replicas": 3,
+    "edits": 120,
+    "failureRate": 0.6
+  },
+  "converged": true,
+  "uniqueOperations": 360,
+  "requests": 30,
+  "droppedRequests": 5,
+  "lostResponses": 4,
+  "duplicateDeliveries": 357,
+  "reorderedResponses": 12,
+  "restarts": 3,
+  "recoveryRequests": 6,
+  "jsonPayloadBytes": 358081,
+  "idleResponseBytes": 61,
+  "fullLogResponseBytes": 50778,
+  "elapsedMs": 95.637,
+  "recoveryMs": 15.235
+}
